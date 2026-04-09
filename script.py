@@ -3,31 +3,51 @@ import json
 
 def main():
     while True:
+        wdl = input("Match result (W, L, =): ").upper().strip()
+        if wdl in ["W", "L", "="]:
+            break
+        else:
+            print("Ошибка! Можно ввести только W, L или =.")
+
+    while True:
         try:
-            map_name = input("Map: ").lower().strip()
+            map_name = input("Map: ").upper().strip()
             kills = int(input("Kills: "))
             death = int(input("Death: "))
             assist = int(input("Help (Assists): "))
             hs_percent = int(input("Head shot %: "))
             damage = int(input("Damage: "))
-
             break
         except ValueError:
-            print("Ошибка: пожалуйста, вводи только числа!\n")
+            print("Ошибка: вводи только числа!")
+
+    wins = 0
+    losses = 0
+    draws = 0
+
+    if wdl == "W":
+        wins = 1
+    elif wdl == "L":
+        losses = 1
+    elif wdl == "=":
+        draws = 1
 
     if death > 0:
         kd = kills / death
     else:
-        kd = float(kills)  # Защита от деления на ноль
+        kd = float(kills)
 
     print("\n--- Итоги матча ---")
-    print()
+    print(f"Result: {wdl}")
     print(f"K/D: {kd:.2f}")
     print(f"K/A/D: {kills}/{assist}/{death}")
     print(f"Headshots: {hs_percent}%")
     print(f"Урон: {damage}")
 
     match_result = {
+        "wins": wins,
+        "draws": draws,
+        "losses": losses,
         "map": map_name,
         "kills": kills,
         "deaths": death,
@@ -51,6 +71,7 @@ def show_stats():
     total_deaths = 0
     total_damage = 0
     total_wins = 0
+    total_draws = 0
     total_losses = 0
     games_count = 0
 
@@ -60,19 +81,20 @@ def show_stats():
                 if line.strip():
                     data = json.loads(line)
 
-                    # Прибавляем данные из текущего матча к общим
                     total_kills += data["kills"]
                     total_deaths += data["deaths"]
-                    total_damage += data.get("damage", 0)  # .get на случай если в старых записях нет урона
+                    total_damage += data.get("damage", 0)
+###################################################################
                     total_wins += data["wins"]
+                    total_draws += data["draws"]
                     total_losses += data["losses"]
                     games_count += 1
 
-        # После того как цикл прошел по ВСЕМ строкам, считаем среднее
-        if games_count > 0:
+        if games_count > 0: # kd form
             overall_kd = total_kills / total_deaths if total_deaths > 0 else total_kills
             avg_damage = total_damage / games_count
 
+            print(f"Результат: W-{total_wins}, L-{total_losses}, D-{total_draws}")
             print(f"Всего игр: {games_count}")
             print(f"Общий K/D: {overall_kd:.2f}")
             print(f"Всего убийств: {total_kills}")
